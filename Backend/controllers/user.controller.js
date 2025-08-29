@@ -44,8 +44,19 @@ module.exports.loginUser = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = user.generateAuthToken();
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
     // res.setHeader("Authorization", `Bearer ${token}`);
     return res.status(200).json({ message: "Login successful", token, user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.getProfile = async (req, res, next) => {
+  try {
+    return res.status(200).json({ user: req.user });
   } catch (error) {
     next(error);
   }
