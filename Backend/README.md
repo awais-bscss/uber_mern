@@ -171,3 +171,105 @@ Usage notes
 - Make sure to send Content-Type: application/json and a JSON body following the shape above.
 
 If you want more routes documented (for example: profile, logout, or socket updates), tell me which one to add next.
+
+## GET /users/profile
+
+Description
+
+- Returns the authenticated user's profile information.
+
+Route
+
+- GET /users/profile
+
+Authentication
+
+- Requires a valid JWT. The project uses an `authUser` middleware which expects the token in the Authorization header as `Bearer <token>` or in an HTTP-only cookie named `token`.
+
+Responses / Status codes
+
+- 200 OK
+
+  - Description: Profile retrieved successfully.
+  - Body: { user: <userObject> }
+
+- 401 Unauthorized
+
+  - Description: Missing or invalid token.
+  - Body: { message: "Authentication required" } or middleware-provided error.
+
+- 500 Internal Server Error
+  - Description: Server-side error.
+
+Example request
+
+```
+GET /users/profile
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Example successful response (200)
+
+```
+{
+  "user": {
+    "_id": "64d...",
+    "fullName": { "firstName": "Jane", "lastName": "Doe" },
+    "email": "jane.doe@example.com",
+    "socketID": null
+  }
+}
+```
+
+## GET /users/logout
+
+Description
+
+- Logs the user out by blacklisting the current token and clearing the `token` cookie.
+
+Route
+
+- GET /users/logout
+
+Authentication
+
+- Requires a valid JWT (same as `/users/profile`) because the controller reads the token and saves it to a blacklist collection.
+
+Responses / Status codes
+
+- 200 OK
+
+  - Description: Logout successful.
+  - Body: { message: "Logout successful" }
+
+- 400 Bad Request
+
+  - Description: No token was provided.
+  - Body: { message: "No token provided" }
+
+- 500 Internal Server Error
+  - Description: Server-side error while blacklisting token or clearing cookie.
+
+Example request
+
+```
+GET /users/logout
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Example successful response (200)
+
+```
+{ "message": "Logout successful" }
+```
+
+Example missing token response (400)
+
+```
+{ "message": "No token provided" }
+```
+
+Usage notes
+
+- Both `/users/profile` and `/users/logout` require authentication. The middleware supports tokens sent via `Authorization: Bearer <token>` or via the `token` cookie.
+- The logout route creates a `blacklistToken` document; ensure your token-checking middleware checks that blacklist when validating tokens if you want the blacklist to prevent reuse.
