@@ -27,3 +27,26 @@ module.exports.registerUser = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports.loginUser = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { email, password } = req.body;
+  try {
+    const user = await userModel.findOne({ email }).select("+password").exec();
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    const token = user.generateAuthToken();
+    // res.setHeader("Authorization", `Bearer ${token}`);
+    return res.status(200).json({ message: "Login successful", token, user });
+  } catch (error) {
+    next(error);
+  }
+};
