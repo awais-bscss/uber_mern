@@ -90,3 +90,84 @@ Usage notes
 - Make sure to send Content-Type: application/json and a JSON body following the shape above.
 
 If you need more endpoints documented or want examples for other responses, tell me which route to add next.
+
+## POST /users/login
+
+Description
+
+- Authenticates an existing user using email and password. On success the endpoint returns a JWT and the user object.
+
+Route
+
+- POST /users/login
+
+Request body (JSON)
+
+- email: string (required, must be a valid email)
+- password: string (required, minimum 6 characters)
+
+Validation rules
+
+- `email` must be a valid email address.
+- `password` must be at least 6 characters long.
+
+Responses / Status codes
+
+- 200 OK
+
+  - Description: Login successful.
+  - Body: { message: "Login successful", token: <jwt>, user: <userObject> }
+
+- 400 Bad Request
+
+  - Description: Validation failed for the input data.
+  - Body: { errors: [ { msg, param, location, value? } ] }
+
+- 401 Unauthorized
+
+  - Description: Invalid credentials or user not found.
+  - Body: { message: "User not found" } or { message: "Invalid credentials" }
+
+- 500 Internal Server Error
+  - Description: Server-side error (database, hashing, etc.).
+
+Example request
+
+```
+POST /users/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "password": "s3cret!"
+}
+```
+
+Example successful response (200)
+
+```
+{
+  "message": "Login successful",
+  "token": "<JWT_TOKEN>",
+  "user": {
+    "_id": "64d...",
+    "fullName": { "firstName": "Jane", "lastName": "Doe" },
+    "email": "jane.doe@example.com",
+    "socketID": null
+  }
+}
+```
+
+Example invalid credentials (401)
+
+```
+{ "message": "Invalid credentials" }
+```
+
+Usage notes
+
+- No Authorization header is required to call this endpoint.
+- The controller looks up the user and compares the provided password; on success it returns a JWT (1 day expiry).
+- Make sure to send Content-Type: application/json and a JSON body following the shape above.
+
+If you want more routes documented (for example: profile, logout, or socket updates), tell me which one to add next.
