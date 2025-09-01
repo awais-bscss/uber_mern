@@ -383,3 +383,181 @@ Usage notes
 - The route will create the captain and return a JWT token valid for 1 day (signed with the server's `JWT_SECRET`).
 - Ensure the server checks email uniqueness (the controller already queries for existing emails).
 - If you want this mounted under a different base path (for example `/captains`), update the examples accordingly.
+
+## POST /captain/login (assumed mount: /captain)
+
+Description
+
+- Authenticates a captain (driver) using email and password. On success returns a JWT, sets an HTTP-only cookie `token`, and returns the captain object.
+
+Route
+
+- POST /captain/login
+
+Request body (JSON)
+
+- email: string (required, must be a valid email)
+- password: string (required, minimum 6 characters)
+
+Validation rules
+
+- `email` must be a valid email address.
+- `password` must be at least 6 characters long.
+
+Responses / Status codes
+
+- 201 Created
+
+  - Description: Login successful (controller currently returns 201 on captain login).
+  - Body: { message: "Login successful", token: <jwt>, captain: <captainObject> }
+
+- 400 Bad Request
+
+  - Description: Validation failed for the input data.
+  - Body: { errors: [ { msg, param, location, value? } ] }
+
+- 401 Unauthorized
+
+  - Description: Invalid credentials or captain not found.
+  - Body: { message: "Captain not found" } or { message: "Invalid credentials" }
+
+- 500 Internal Server Error
+  - Description: Server-side error (database, hashing, etc.).
+
+Example request
+
+```
+POST /captain/login
+Content-Type: application/json
+
+{
+  "email": "john.smith@example.com",
+  "password": "driver123"
+}
+```
+
+Example successful response (201)
+
+```
+{
+  "message": "Login successful",
+  "token": "<JWT_TOKEN>",
+  "captain": {
+    "_id": "64d...",
+    "fullName": { "firstName": "John", "lastName": "Smith" },
+    "email": "john.smith@example.com",
+    "vehicle": { "color": "Blue", "model": "Toyota Prius", "licensePlate": "ABC-1234", "vehicleType": "car", "capacity": 4 },
+    "socketID": null,
+    "status": "inactive"
+  }
+}
+```
+
+## GET /captain/profile (assumed mount: /captain)
+
+Description
+
+- Returns the authenticated captain's profile information.
+
+Route
+
+- GET /captain/profile
+
+Authentication
+
+- Requires a valid JWT. The project uses an `authCaptain` middleware which accepts tokens in the `Authorization: Bearer <token>` header or an HTTP-only cookie named `token`.
+- If the token is missing, invalid, or blacklisted, the middleware will respond with 401.
+
+Responses / Status codes
+
+- 200 OK
+
+  - Description: Profile retrieved successfully.
+  - Body: { captain: <captainObject> }
+
+- 401 Unauthorized
+
+  - Description: Missing/invalid token or captain not found.
+  - Body: { message: "No token, authorization denied" } or { message: "Token is not valid" } or { message: "Captain not found" }
+
+- 500 Internal Server Error
+  - Description: Server-side error.
+
+Example request
+
+```
+GET /captain/profile
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Example successful response (200)
+
+```
+{
+  "captain": {
+    "_id": "64d...",
+    "fullName": { "firstName": "John", "lastName": "Smith" },
+    "email": "john.smith@example.com",
+    "vehicle": { "color": "Blue", "model": "Toyota Prius", "licensePlate": "ABC-1234", "vehicleType": "car", "capacity": 4 },
+    "socketID": null,
+    "status": "inactive"
+  }
+}
+```
+
+## GET /captain/logout (assumed mount: /captain)
+
+Description
+
+- Logs the captain out by blacklisting the current token and clearing the `token` cookie.
+
+Route
+
+- GET /captain/logout
+
+Authentication
+
+- Requires a valid JWT (same as `/captain/profile`) because the controller reads the token and saves it to a blacklist collection.
+
+Responses / Status codes
+
+- 200 OK
+
+  - Description: Logout successful.
+  - Body: { message: "Logout successful" }
+
+- 400 Bad Request
+
+  - Description: No token was provided to logout (controller returns 400 in that case).
+  - Body: { message: "No token provided" }
+
+- 401 Unauthorized
+
+  - Description: If middleware runs first and token is missing/invalid, it may return 401.
+
+- 500 Internal Server Error
+  - Description: Server-side error while blacklisting token or clearing cookie.
+
+Example request
+
+```
+GET /captain/logout
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Example successful response (200)
+
+```
+{ "message": "Logout successful" }
+```
+
+Example missing token response (400)
+
+```
+{ "message": "No token provided" }
+```
+
+Usage notes
+
+- The `authCaptain` middleware checks for blacklisted tokens using the `blacklistToken` collection; ensure your token validation checks the blacklist on every protected route.
+- The login endpoint sets an HTTP-only `token` cookie; clients can rely on the cookie or use the returned JWT in the `Authorization` header.
