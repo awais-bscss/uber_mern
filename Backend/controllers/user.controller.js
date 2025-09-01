@@ -9,6 +9,11 @@ module.exports.registerUser = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
   const { fullname, email, password } = req.body;
+  const checkMail = await userModel.find({ email }).exec();
+  if (checkMail.length > 0) {
+    return res.status(400).json({ message: "Email already exists" });
+  }
+
   const hashPassword = await userModel.hashPassword(password);
   if (!hashPassword) {
     return res.status(500).json({ message: "Error hashing password" });

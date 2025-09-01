@@ -273,3 +273,113 @@ Usage notes
 
 - Both `/users/profile` and `/users/logout` require authentication. The middleware supports tokens sent via `Authorization: Bearer <token>` or via the `token` cookie.
 - The logout route creates a `blacklistToken` document; ensure your token-checking middleware checks that blacklist when validating tokens if you want the blacklist to prevent reuse.
+
+## POST /captain/register (assumed mount: /captain)
+
+Description
+
+- Registers a new captain (driver) with vehicle details and returns an authentication token and the created captain object.
+
+Note on route mount
+
+- The `captain.routes.js` router defines `POST /register`. This documentation assumes the router is mounted at `/captain` (resulting in `/captain/register`). Adjust the base path if your app mounts it differently (for example `/captains/register`).
+
+Route
+
+- POST /captain/register
+
+Request body (JSON)
+
+- fullname: object (required)
+  - firstname: string (required, minimum 3 characters)
+  - lastname: string (optional)
+- email: string (required, must be a valid email)
+- password: string (required, minimum 6 characters)
+- vehicle: object (required)
+  - color: string (required, minimum 3 characters)
+  - model: string (optional)
+  - licensePlate: string (required)
+  - vehicleType: string (required, one of: "car", "bike", "auto")
+  - capacity: integer (required, between 1 and 8)
+
+Validation rules
+
+- `email` must be a valid email address and unique.
+- `fullname.firstname` must be at least 3 characters long.
+- `password` must be at least 6 characters long.
+- `vehicle.color` must be at least 3 characters long.
+- `vehicle.licensePlate` is required.
+- `vehicle.capacity` must be an integer between 1 and 8.
+- `vehicle.vehicleType` must be one of: `car`, `bike`, `auto`.
+
+Responses / Status codes
+
+- 201 Created
+
+  - Description: Captain was created successfully.
+  - Body: { message: "Captain registered", token: <jwt>, captain: <captainObject> }
+
+- 400 Bad Request
+
+  - Description: Validation failed or email already exists.
+  - Body examples:
+    - Validation errors: { errors: [ { msg, param, location, value? } ] }
+    - Email exists: { message: "Email already exists" }
+
+- 500 Internal Server Error
+  - Description: Server-side error (for example: failed to hash password or database error).
+
+Example request
+
+```
+POST /captain/register
+Content-Type: application/json
+
+{
+  "fullname": { "firstname": "John", "lastname": "Smith" },
+  "email": "john.smith@example.com",
+  "password": "driver123",
+  "vehicle": {
+    "color": "Blue",
+    "model": "Toyota Prius",
+    "licensePlate": "ABC-1234",
+    "vehicleType": "car",
+    "capacity": 4
+  }
+}
+```
+
+Example successful response (201)
+
+```
+{
+  "message": "Captain registered",
+  "token": "<JWT_TOKEN>",
+  "captain": {
+    "_id": "64d...",
+    "fullName": { "firstName": "John", "lastName": "Smith" },
+    "email": "john.smith@example.com",
+    "vehicle": { "color": "Blue", "model": "Toyota Prius", "licensePlate": "ABC-1234", "vehicleType": "car", "capacity": 4 },
+    "socketID": null,
+    "status": "inactive"
+  }
+}
+```
+
+Example validation error (400)
+
+```
+{
+  "errors": [
+    { "msg": "Invalid email", "param": "email", "location": "body" },
+    { "msg": "Color must be at least 3 characters long", "param": "vehicle.color", "location": "body" }
+  ]
+}
+```
+
+Usage notes
+
+- No Authorization header is required for registration.
+- The route will create the captain and return a JWT token valid for 1 day (signed with the server's `JWT_SECRET`).
+- Ensure the server checks email uniqueness (the controller already queries for existing emails).
+- If you want this mounted under a different base path (for example `/captains`), update the examples accordingly.
