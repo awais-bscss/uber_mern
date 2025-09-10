@@ -1,27 +1,25 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserStateContext } from "../context/userContext";
+import { CaptainStateContext } from "../context/CaptainContext";
 import axios from "axios";
 
-const UserProtectedWrap = ({ children }) => {
-  const { user, setUser } = useContext(UserStateContext);
+const CaptainProtectedWrap = ({ children }) => {
+  const { captain, setCaptain } = useContext(CaptainStateContext);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // agar token hi nahi hai to sidha redirect
     if (!token) {
-      navigate("/login", { replace: true });
+      navigate("/captain-login", { replace: true });
       return;
     }
 
-    // sirf tabhi call karo jab user null hai (context empty hai)
-    if (!user) {
-      const fetchUser = async () => {
+    if (!captain) {
+      const fetchCaptain = async () => {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_BASE_URL}/users/profile`,
+            `${import.meta.env.VITE_BASE_URL}/captains/profile`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -31,32 +29,31 @@ const UserProtectedWrap = ({ children }) => {
           );
 
           if (response.status === 200) {
-            setUser(response.data.user);
+            setCaptain(response.data.captain);
           } else {
             localStorage.removeItem("token");
-            navigate("/login", { replace: true });
+            navigate("/captain-login", { replace: true });
           }
         } catch (error) {
           console.error(error);
           localStorage.removeItem("token");
-          navigate("/login", { replace: true });
+          navigate("/captain-login", { replace: true });
         } finally {
           setIsLoading(false);
         }
       };
 
-      fetchUser();
+      fetchCaptain();
     } else {
-      // agar user context already filled hai
       setIsLoading(false);
     }
-  }, [token, user, setUser, navigate]);
+  }, [token, captain, setCaptain, navigate]);
 
   if (isLoading) {
     return <div>Loading ...</div>;
   }
 
-  return token && user ? children : null;
+  return token && captain ? children : null;
 };
 
-export default UserProtectedWrap;
+export default CaptainProtectedWrap;

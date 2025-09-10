@@ -1,10 +1,10 @@
 import React, { useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserStateContext } from "../context/userContext";
+import { CaptainStateContext } from "../context/CaptainContext";
 
 const UserLogout = () => {
-  const { setUser } = useContext(UserStateContext); // context state access
+  const { setCaptain } = useContext(CaptainStateContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,16 +12,14 @@ const UserLogout = () => {
       try {
         const token = localStorage.getItem("token");
 
-        // Agar token nahi hai, turant login page par bhej do
         if (!token) {
-          setUser(null); // context reset
-          navigate("/login", { replace: true });
+          setCaptain(null);
+          navigate("/login-captain", { replace: true });
           return;
         }
 
-        // Backend logout request (POST safe)
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/users/logout`,
+          `${import.meta.env.VITE_API_URL}/captains/logout`,
           {},
           {
             headers: {
@@ -31,18 +29,18 @@ const UserLogout = () => {
         );
 
         localStorage.removeItem("token");
-        setUser(null);
-        navigate("/login", { replace: true });
+        setCaptain(null);
+        navigate("/login-captain", { replace: true });
       } catch (error) {
         console.error("Logout failed:", error.response?.data || error.message);
         localStorage.removeItem("token");
-        setUser(null);
-        navigate("/login", { replace: true });
+        setCaptain(null);
+        navigate("/login-captain", { replace: true });
       }
     };
 
     logoutUser();
-  }, [navigate, setUser]);
+  }, [navigate, setCaptain]);
 
   return <div>Logging out...</div>;
 };
