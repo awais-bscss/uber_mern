@@ -4,7 +4,7 @@
 
 Description
 
-- Registers a new user account and returns an authentication token and the created user object.
+- Registers a new account and returns an authentication token and the created user object.
 
 Route
 

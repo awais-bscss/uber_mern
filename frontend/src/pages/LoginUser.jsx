@@ -1,14 +1,42 @@
 import React, { useState } from "react";
 import UberLogo from "../assets/images/UberLogo.png";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { UserStateContext } from "../context/userContext";
+import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userData, setUserData] = useState({});
-  const submitHandler = (e) => {
+
+  const navigate = useNavigate();
+  const { user, setUser } = React.useContext(UserStateContext);
+  if (user && user.email) {
+    return <Navigate to="/home" replace={true} />;
+  }
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setUserData({ email: email, password: password });
+
+    try {
+      const userData = { email: email, password: password };
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/login`,
+        userData
+      );
+
+      if (res.status === 200) {
+        setUser(res.data);
+        localStorage.setItem("token", res.data.token);
+        navigate("/home", { replace: true });
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Login failed. Please check your credentials and try again.");
+    }
+
     setEmail("");
     setPassword("");
   };

@@ -8,7 +8,8 @@ module.exports.registerUser = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  const { fullname, email, password } = req.body;
+  const { fullName, email, password } = req.body;
+
   const checkMail = await userModel.find({ email }).exec();
   if (checkMail.length > 0) {
     return res.status(400).json({ message: "Email already exists" });
@@ -20,8 +21,8 @@ module.exports.registerUser = async (req, res, next) => {
   }
   try {
     const user = await userService.createUser({
-      firstname: fullname.firstname,
-      lastname: fullname.lastname,
+      firstName: fullName.firstName,
+      lastName: fullName.lastName,
       email,
       password: hashPassword,
     });
