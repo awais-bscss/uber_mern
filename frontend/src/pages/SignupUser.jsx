@@ -33,19 +33,14 @@ const SignupUser = () => {
       );
 
       if (res.status === 201) {
-        // Backend se user aur token alag ho sakta hai
         const { token, user } = res.data;
 
-        // 1️⃣ Token save
         localStorage.setItem("token", token);
 
-        // 2️⃣ User state update
         setUser(user);
 
-        // 3️⃣ Navigate
         navigate("/home", { replace: true });
 
-        // 4️⃣ Optional: Form reset
         setFirstName("");
         setLastName("");
         setEmail("");

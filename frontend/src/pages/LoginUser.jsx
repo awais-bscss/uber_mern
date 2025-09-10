@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import UberLogo from "../assets/images/UberLogo.png";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -11,7 +11,7 @@ const LoginUser = () => {
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
-  const { user, setUser } = React.useContext(UserStateContext);
+  const { user, setUser } = useContext(UserStateContext);
   if (user && user.email) {
     return <Navigate to="/home" replace={true} />;
   }
