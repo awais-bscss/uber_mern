@@ -5,6 +5,10 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { FaCaretDown } from "react-icons/fa";
 import LocationSearchPanel from "../components/LocationSearchPanel";
+import Car from "../assets/images/car.png";
+import Auto from "../assets/images/auto.png";
+import Bike from "../assets/images/bike.png";
+import { FaUser } from "react-icons/fa6";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -12,6 +16,9 @@ const Home = () => {
   const [panelOpen, setPanelOpen] = useState(false);
   const panelRef = useRef(null);
   const panelCloseRef = useRef(null);
+  const [vehiclePanel, setVehiclePanel] = useState(false);
+  const VehiclePanelRef = useRef(null);
+
   const submitHandler = (e) => {
     e.preventDefault();
   };
@@ -21,7 +28,7 @@ const Home = () => {
       if (panelOpen) {
         gsap.to(panelRef.current, {
           height: "70%",
-          padding: "40px",
+          padding: "20px",
         });
 
         gsap.to(panelCloseRef.current, {
@@ -41,22 +48,43 @@ const Home = () => {
     [panelOpen]
   );
 
+  useGSAP(
+    function () {
+      if (vehiclePanel) {
+        gsap.to(VehiclePanelRef.current, {
+          transform: "translateY(0)",
+        });
+      } else {
+        gsap.to(VehiclePanelRef.current, {
+          transform: "translateY(100%)",
+        });
+      }
+    },
+    [vehiclePanel]
+  );
+
   return (
-    <div className="relative h-screen ">
+    <div className="relative h-screen overflow-hidden">
       <img
         className="w-20 h-auto absolute left-6 top-6"
         src={Uberlogowhite}
         alt="Logo_Img"
       />
 
-      <div className="h-screen w-screen">
+      <div
+        onClick={() => {
+          setPanelOpen(false);
+          setVehiclePanel(false);
+        }}
+        className="h-screen w-screen"
+      >
         <img
           className="h-full w-full object-cover object-center"
           src={MapImg}
           alt="mapimg"
         />
       </div>
-      <div className=" w-full flex flex-col justify-end absolute h-screen top-0 ">
+      <div className=" w-full flex flex-col  justify-end absolute h-screen top-0 ">
         <div className="h-[30%] p-5 bg-white relative">
           <FaCaretDown
             ref={panelCloseRef}
@@ -89,8 +117,59 @@ const Home = () => {
             />
           </form>
         </div>
-        <div ref={panelRef} className="h-0 overflow-hidden bg-white">
-          <LocationSearchPanel />
+        <div ref={panelRef} className="h-0 overflow-y-auto bg-white">
+          <LocationSearchPanel
+            setVehiclePanel={setVehiclePanel}
+            setPanelOpen={setPanelOpen}
+          />
+        </div>
+      </div>
+      <div
+        ref={VehiclePanelRef}
+        className="fixed  z-10 bottom-0 p-5 translate-y-full bg-white w-full"
+      >
+        <h3 className="text-2xl font-semibold mb-3">Choose a vehicle</h3>
+        <div className=" w-full flex justify-between border-2 rounded-lg active:border-green-700  border-black mb-2 bg-white items-center">
+          <img className="h-12 ml-1" src={Car} alt="Car_img" />
+          <div className="ml-3 w-[60%]">
+            <h4 className="text-xl font-semibold">
+              UberX
+              <span className="ml-3 p-1">
+                <FaUser className="inline text-sm mb-1" />4
+              </span>
+            </h4>
+            <h3 className="text-lg font-semibold">2 min away</h3>
+            <p className="text-gray-900">Affordable, compact rides</p>
+          </div>
+          <h2 className="text-xl mr-1 font-semibold"> Rs.400</h2>
+        </div>
+        <div className=" w-full flex justify-between border-2 rounded-lg active:border-green-700 border-black mb-2 bg-white items-center">
+          <img className="h-12" src={Auto} alt="Auto_img" />
+          <div className="ml-2 w-[60%]">
+            <h4 className="text-xl font-semibold">
+              UberAuto
+              <span className="ml-3 p-1">
+                <FaUser className="inline text-sm mb-1" />3
+              </span>
+            </h4>
+            <h3 className="text-lg font-semibold">2 min away</h3>
+            <p className="text-gray-900">Affordable, auto rides</p>
+          </div>
+          <h2 className="text-xl mr-1 font-semibold"> Rs.200</h2>
+        </div>
+        <div className=" w-full flex justify-between border-2 rounded-lg active:border-green-700  border-black mb-2 bg-white items-center">
+          <img className="h-12 ml-4" src={Bike} alt="Bike_img" />
+          <div className="ml-7 w-[60%]">
+            <h4 className="text-xl font-semibold">
+              Moto
+              <span className="ml-3 p-1">
+                <FaUser className="inline text-sm mb-1" />1
+              </span>
+            </h4>
+            <h3 className="text-lg font-semibold">2 min away</h3>
+            <p className="text-gray-900">Affordable, motorcycle rides</p>
+          </div>
+          <h2 className="text-xl mr-1 font-semibold"> Rs.100</h2>
         </div>
       </div>
     </div>
