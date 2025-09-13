@@ -44,7 +44,7 @@ const ConfirmVehicle = (props) => {
             onClick={() => {
               props.setVehicleFound(true), props.setConfirmVehicle(false);
             }}
-            className="w-full font-semibold text-lg bg-black mt-4 text-white py-2 rounded-lg hover:bg-gray-800 transition"
+            className="w-full font-semibold text-lg bg-black mt-4 text-white py-2 rounded-lg hover:bg-gray-800 cursor-pointer transition"
           >
             Confirm
           </button>

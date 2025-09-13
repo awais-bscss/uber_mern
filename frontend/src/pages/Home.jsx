@@ -133,7 +133,7 @@ const Home = () => {
         <img
           className="h-full w-full object-cover object-center"
           src={MapImg}
-          alt="mapimg"
+          alt="maping"
         />
       </div>
       <div className=" w-full flex flex-col  justify-end absolute h-screen top-0 ">
@@ -205,7 +205,7 @@ const Home = () => {
       </div>
       <div
         ref={WaitingForDriverRef}
-        className="fixed  z-10 bottom-0 p-5  bg-white w-full"
+        className="fixed  z-10 bottom-0 p-5 translate-y-full  bg-white w-full"
       >
         <WaitForDriver
           setWaitingForDriver={setWaitingForDriver}
